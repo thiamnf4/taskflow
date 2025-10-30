@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: taskflow
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:taskflow}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+  
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:default-dev-secret-replace-in-production}
+  expiration: 86400000
+
+# AWS S3 Configuration
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET:taskflow-attachments}
+    region: ${AWS_REGION:us-east-1}
+    access-key: ${AWS_ACCESS_KEY:}
+    secret-key: ${AWS_SECRET_KEY:}
+
+# Rate Limiting Configuration
+rate-limit:
+  capacity: 100
+  refill-tokens: 100
+  refill-duration-minutes: 1
+
+# Server Configuration
+server:
+  port: 8080
+  error:
+    include-message: always
+
+# Logging
+logging:
+  level:
+    com.taskflow: INFO
+    org.springframework.security: DEBUG

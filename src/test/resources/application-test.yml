@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskflow_test
+    username: test
+    password: test
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+jwt:
+  secret: test-secret-key-for-testing-only
+  expiration: 86400000
+
+aws:
+  s3:
+    bucket-name: test-bucket
+    region: us-east-1
+    access-key: test
+    secret-key: test
+
+rate-limit:
+  capacity: 1000
+  refill-tokens: 1000
+  refill-duration-minutes: 1

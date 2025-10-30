@@ -1,0 +1,78 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: taskflow_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    
+    - name: Build with Maven
+      run: mvn clean install
+    
+    - name: Run tests
+      run: mvn test
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_NAME: taskflow_test
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+    
+    - name: Build Docker image
+      run: docker build -t taskflow:latest .
+    
+    - name: Run Docker container test
+      run: |
+        docker run -d --name taskflow-test -p 8080:8080 \
+          -e DB_HOST=host.docker.internal \
+          -e DB_PORT=5432 \
+          -e DB_NAME=taskflow_test \
+          -e DB_USERNAME=postgres \
+          -e DB_PASSWORD=postgres \
+          -e REDIS_HOST=host.docker.internal \
+          -e REDIS_PORT=6379 \
+          taskflow:latest
+        sleep 30
+        curl -f http://localhost:8080/api/v1/auth/health || exit 1
+        docker stop taskflow-test
