@@ -1,6 +1,7 @@
 package com.taskflow.service;
 
 import com.taskflow.dto.ProjectRequest;
+import com.taskflow.exception.ResourceNotFoundException;
 import com.taskflow.model.AuditLog;
 import com.taskflow.model.Project;
 import com.taskflow.model.User;
@@ -36,7 +37,7 @@ public class ProjectService {
     public Project getProjectById(Long projectId) {
         Long tenantId = TenantContext.getCurrentTenant();
         return projectRepository.findByIdAndTenantId(projectId, tenantId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
     }
     
     @Transactional
@@ -46,7 +47,7 @@ public class ProjectService {
         String userEmail = getCurrentUserEmail();
         
         User owner = userRepository.findByEmailAndTenantId(userEmail, tenantId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Project project = new Project();
         project.setName(request.getName());
